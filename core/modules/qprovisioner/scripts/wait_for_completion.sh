@@ -25,7 +25,7 @@
 
 secret_id="${secret_id}"
 
-max_retries=30
+max_retries=60
 count=0
 
 while true; do
