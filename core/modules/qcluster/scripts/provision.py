@@ -92,6 +92,7 @@ def run_command(
         return result
     except subprocess.TimeoutExpired as e:
         error_msg = f"Command timed out after {timeout} seconds: {cmd}"
+        logging.error(error_msg)
         raise TimeoutError(error_msg) from e
     except subprocess.CalledProcessError as e:
         logging.error(f"Command failed: {cmd}")
@@ -304,7 +305,7 @@ def verify_object_storage_access() -> None:
 def download_and_install_qumulo() -> None:
     os.environ["QUMULO_NETWORK_MANAGED_BY_HOST"] = "true"
 
-    logging.info("Downloading Qumulo Core")
+    logging.info(f"Downloading Qumulo Core from {qumulo_core_uri}")
 
     try:
         qumulo_rpm = Path("/tmp/qumulo-core.rpm")
