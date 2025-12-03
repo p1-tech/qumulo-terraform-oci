@@ -76,7 +76,7 @@ resource "oci_core_instance" "node" {
   }
 
   lifecycle {
-    ignore_changes = [metadata, availability_domain, fault_domain, source_details]
+    ignore_changes = [metadata, availability_domain, fault_domain, source_details, shape, shape_config]
 
     precondition {
       condition     = var.persisted_node_count <= var.node_count
@@ -101,7 +101,7 @@ locals {
 
 resource "oci_core_private_ip" "private_ip" {
   count         = var.floating_ip_count
-  vnic_id       = local.vnic_ids[floor(count.index / 63)]
+  vnic_id       = length(local.vnic_ids) > 0 ? local.vnic_ids[floor(count.index / 63)] : null
   freeform_tags = var.freeform_tags
   lifecycle {
     ignore_changes = [vnic_id]

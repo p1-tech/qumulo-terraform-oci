@@ -238,6 +238,74 @@ To deploy a cluster outside the home region, the following changes are required:
 - The Secrets Vaults for the cluster and persistent storage must be in the same region as the cluster.
 - You must use a precreated dynamic group and identity policy created in the home region for the cluster.  Set `create_dynamic_group_and_identity_policy` to `false` in `terraform.tfvars`.  Follow the instruction in the [Prerequisites](#prerequisites) section 4.B to create the dynamic group and identity policy.
 
+## Using a Swing Pool to change node types
+A swing pool is deployed to create a set of nodes outside the main pool for the purpose of making changes that require a complete replacement of the running nodes.  When the swing pool is enabled three additional nodes of the same type as the existing pool will be created.  Then the node count can be reduced to zero to clear the existing nodes.  Then a new set of nodes can be created allowing a change in the node type.  When this is complete, the swing nodes can be removed from the cluster.
+
+### Important nodes about using a swing pool
+- Performing this process will cause the Floating IP addresses to change.  The Floating IP addresses are tied to the node creation process, so setting the node count to 0 will delete the existing Floating IP addresses.
+- This process should be done during an outage window.  There will be a disruption of client access while this is performed.
+- Do not use this process on a single node cluster, increase cluster size to at least 3 nodes prior to performing this process.
+- Do not provision the swing pool during the intial creation of a cluster.
+
+### Process of modifying a cluster using a swing pool
+
+- Ensure you have suffient instance capacity to deploy three additional nodes of the current instance type (five additional nodes if converting a single node cluster)
+- Confirm that Floating IP count is 63 or fewer
+- Do not attempt to convert intance types from Standard to DenseIO or back, this will corrupt the cluster
+- Ensure that the specified QFS version matchs that of the existing nodes
+
+#### Step 1 - Create and join the swing pool
+
+This step deploys three (or five if converting a single node cluster) new instances of the existing type and joins them to the cluster
+
+- Set the variables `create_swing_pool` and `provision_swing_pool` to true
+- Apply the terrform stack - **This will cause a quorum event**
+
+#### Step 2 - Evict the existing nodes from the main pool
+
+This step evicts the original nodes from the cluster
+
+- Set the `q_cluster_node_count` to 0
+- Apply the terraform stack - **This will cause a quorum event**
+
+#### Step 3 - Decomission the existing nodes
+
+This step destroys the original nodes
+
+- Set the variable `hazardous_swing_ops` and `configure_on_swing_pool` to true
+- Set the `q_node_count` to 0
+- Apply the terraform stack
+
+#### Step 4 - Create and join the new nodes to the main pool
+
+This step creates the new nodes and joins them to the cluster
+
+- Remove the variable `hazardous_swing_ops`
+- Make node configuration changes in terraform and set `q_cluster_node_count` and `q_node_count` to the desired values
+- Apply the terraform stack - **This will cause a quorum event**
+
+#### Step 5 - Evict the swing nodes from the cluster
+
+This step evicts the swing nodes from the cluster
+
+- Remove the variable `configure_on_swing_pool`
+- Set `provision_swing_pool` to `false`
+- Apply the terraform stack - **This will cause a quorum event**
+
+#### Step 6 - Decomission the swing nodes
+
+This step destroys the swing nodes
+
+- Set `create_swing_pool` to `false`
+- Apply the terraform stack
+
+#### Step 7 - Complete the process
+
+This step removes the swing pool variables from the tfvars file
+
+- Remove the variables `provision_swing_pool` and `create_swing_pool`
+
+
 ## Support
 
 For issues beyond the scope of this module:

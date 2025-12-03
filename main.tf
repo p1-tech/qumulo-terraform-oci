@@ -58,5 +58,8 @@ module "core" {
   object_storage_access_delay              = var.object_storage_access_delay
   defined_tags                             = var.defined_tags
   freeform_tags                            = var.freeform_tags
+  create_swing_pool                        = var.create_swing_pool
+  provision_swing_pool                     = var.provision_swing_pool
+  hazardous_swing_ops                      = var.hazardous_swing_ops
 }
 

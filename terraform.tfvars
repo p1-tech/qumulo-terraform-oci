@@ -10,20 +10,24 @@
 # q_cluster_admin_password     - Minumum 8 characters and must include one each of: uppercase, lowercase, and a special character.  If replacing a cluster make sure this password matches current running cluster.
 # node_ssh_public_key_paths    - List of paths to the pre-created admin public key files that should be installed on the OCI virtual machines running Qumulo
 # node_ssh_public_key_strings  - List of pre-created admin public keys that should be installed on the OCI virtual machines running Qumulo
-# node_ssh_public_key_paths and node_ssh_public_key_strings can be used together or separately, but at least one must be set.
-# qumulo_core_rpm_url          - URL to object storing a qumulo-qcore.rpm file
+#  node_ssh_public_key_paths and node_ssh_public_key_strings can be used together or separately, but at least one must be set.
 
-region                      = "my_region"
+region                      = <region_name>
 availability_domain         = null
-tenancy_ocid                = "my_tenancy"
-compartment_ocid            = "my_compartment"
-subnet_ocid                 = "my_subnet"
-user_ocid                   = "my_ocid"
-q_cluster_name              = "my_cluster"
-q_cluster_admin_password    = "my_password"
-node_ssh_public_key_paths   = ["my_public_key_file_path", ]
-node_ssh_public_key_strings = ["my_public_key_string", ]
-qumulo_core_rpm_url         = "my_rpm_url"
+tenancy_ocid                = <tenancy_ocid>
+compartment_ocid            = <compartment_ocid>
+subnet_ocid                 = <subnet_ocid>
+user_ocid                   = <user_ocid>
+q_cluster_name              = <cluster_name>
+q_cluster_admin_password    = <cluster_password>
+node_ssh_public_key_paths   = [<key_path1>, <key_path2>, ...]
+node_ssh_public_key_strings = [<key_string1>, <key_string2>, ...]
+
+# Set exactly one of the following variables:
+# qumulo_core_rpm_path      - Local path to the downloaded qumulo-qcore.rpm file.
+# qumulo_core_rpm_url       - URL to object storing a qumulo-qcore.rpm file
+
+qumulo_core_rpm_url = <QFS_RPM_URL>
 
 #
 # ****************************** Advanced Configurations **********************************************
@@ -40,15 +44,21 @@ qumulo_core_rpm_url         = "my_rpm_url"
 # custom_secret_key             - The secret key of a user with full object storage access in the cluster's compartment. Leave it at null to create a new user and secret key for this purpose.
 # q_cluster_floating_ips        - The number of floating ips associated with the cluster.
 
-q_node_count                  = 3
-q_cluster_node_count          = 3
-q_cluster_soft_capacity_limit = 500
-node_instance_shape           = "VM.DenseIO.E4.Flex"
-node_instance_ocpus           = 8
-block_volume_count            = 3
-q_cluster_cold                = false
-vault_ocid                    = "my_vault"
-persistent_storage_vault_ocid = "my_vault"
-custom_secret_key_id          = null
-custom_secret_key             = null
-q_cluster_floating_ips        = 0
+q_node_count                  = <cluster_instance_count>
+q_cluster_node_count          = <cluster_provisioned_node_count>
+q_cluster_soft_capacity_limit = <cluster_soft_capacity_limit>
+node_base_image               = <node_base_image_ocid>
+node_instance_shape           = <node_shape_name>
+node_instance_ocpus           = <node_ocpu_count>
+block_volume_count            = <block_volume_count>
+q_cluster_cold                = <true/false>
+vault_ocid                    = <vault_ocid>
+persistent_storage_vault_ocid = <vault_ocid>
+custom_secret_key_id          = <key_id>
+custom_secret_key             = <key_secret>
+q_cluster_floating_ips        = <floating_ips_count>
+
+create_dynamic_group_and_identity_policy = <true/false>
+dev_environment                          =  <true/false>
+
+assign_public_ip = <true/false>

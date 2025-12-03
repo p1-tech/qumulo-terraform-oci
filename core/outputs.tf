@@ -23,7 +23,7 @@
  */
 
 output "floating_ips" {
-  value = module.qcluster.floating_ips
+  value = local.combined_floating_ips
 }
 
 output "deployed_nodes" {

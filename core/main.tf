@@ -356,23 +356,70 @@ module "qprovisioner" {
   instance_ssh_public_key_paths   = var.node_ssh_public_key_paths
   instance_ssh_public_key_strings = var.node_ssh_public_key_strings
 
-  cluster_node_ip_addresses               = local.cluster_node_ips
-  clustering_node_ocid                    = local.clustering_node_id
-  clustering_node_ip_address              = local.clustering_node_ip
-  node_ip_addresses_and_fault_domains     = local.node_ips_and_fault_domains
-  object_storage_uris                     = local.object_storage_uris
-  soft_capacity_limit                     = var.q_cluster_soft_capacity_limit
-  product_type                            = local.product_type
-  secret_ocid                             = oci_vault_secret.customer_secret_key_secret.id
-  admin_password                          = var.q_cluster_admin_password
-  floating_ip_addresses                   = module.qcluster.floating_ips
-  netmask                                 = data.oci_core_subnet.subnet.cidr_block
-  cluster_node_count_secret_id            = oci_vault_secret.cluster_node_count.id
-  deployed_permanent_disk_count_secret_id = oci_vault_secret.deployed_permanent_disk_count.id
-  cluster_soft_capacity_limit_secret_id   = oci_vault_secret.cluster_soft_capacity_limit.id
-  provisioner_complete_secret_id          = oci_vault_secret.provisioner_complete.id
+  cluster_node_ip_addresses                 = local.cluster_node_ips
+  swing_node_ip_addresses                   = local.swing_node_ips
+  clustering_node_ocid                      = local.clustering_node_id
+  clustering_node_ip_address                = local.clustering_node_ip
+  node_ip_addresses_and_fault_domains       = local.node_ips_and_fault_domains
+  swing_node_ip_addresses_and_fault_domains = local.swing_node_ips_and_fault_domains
+  object_storage_uris                       = local.object_storage_uris
+  soft_capacity_limit                       = var.q_cluster_soft_capacity_limit
+  product_type                              = local.product_type
+  secret_ocid                               = oci_vault_secret.customer_secret_key_secret.id
+  admin_password                            = var.q_cluster_admin_password
+  floating_ip_addresses                     = local.combined_floating_ips
+  netmask                                   = data.oci_core_subnet.subnet.cidr_block
+  cluster_node_count_secret_id              = oci_vault_secret.cluster_node_count.id
+  deployed_permanent_disk_count_secret_id   = oci_vault_secret.deployed_permanent_disk_count.id
+  cluster_soft_capacity_limit_secret_id     = oci_vault_secret.cluster_soft_capacity_limit.id
+  provisioner_complete_secret_id            = oci_vault_secret.provisioner_complete.id
 
   dev_environment = var.dev_environment
   defined_tags    = var.defined_tags
   freeform_tags   = var.freeform_tags
+
+  create_swing_pool    = var.create_swing_pool
+  provision_swing_pool = var.provision_swing_pool
+  swing_node_count     = local.swing_node_count
+}
+
+module "swing_pool" {
+  source = "./modules/qcluster"
+
+  deployment_unique_name = "${local.deployment_unique_name}-swing"
+
+  tenancy_ocid     = var.tenancy_ocid
+  compartment_ocid = var.compartment_ocid
+  subnet_ocid      = var.subnet_ocid
+
+  node_count           = local.swing_node_count
+  permanent_disk_count = local.permanent_disk_count
+  floating_ip_count    = 0 # Swing pool nodes should not change the floating IP pool
+  persisted_node_count = tonumber(data.external.cluster_node_count.result.value)
+  persisted_disk_count = tonumber(data.external.deployed_permanent_disk_count.result.value)
+
+  node_instance_shape = var.node_instance_shape
+  node_instance_ocpus = var.node_instance_ocpus
+  node_base_image     = local.node_base_image
+  assign_public_ip    = var.assign_public_ip
+
+  node_ssh_public_key_paths   = var.node_ssh_public_key_paths
+  node_ssh_public_key_strings = var.node_ssh_public_key_strings
+
+  qumulo_core_object_uri = var.qumulo_core_rpm_url
+
+  availability_domain = var.availability_domain
+
+  object_storage_uris         = local.object_storage_uris
+  access_key_id               = var.custom_secret_key == null ? local.access_key_id : ""
+  secret_key                  = var.custom_secret_key == null ? local.secret_key : ""
+  object_storage_access_delay = var.object_storage_access_delay
+
+  defined_tags  = var.defined_tags
+  freeform_tags = var.freeform_tags
+
+  depends_on = [
+    oci_identity_policy.cluster_policy,
+    oci_identity_policy.instance_policy
+  ]
 }

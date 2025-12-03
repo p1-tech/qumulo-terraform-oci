@@ -174,3 +174,34 @@ variable "dev_environment" {
   type        = bool
   default     = false
 }
+
+variable "swing_node_ip_addresses_and_fault_domains" {
+  description = "The private ips and fault domains for the swing pool nodes in the Qumulo cluster."
+  type        = string
+}
+
+variable "create_swing_pool" {
+  description = "If true, will deploy the OCI artifacts required for a swing pool."
+  type        = bool
+  default     = false
+}
+
+variable "provision_swing_pool" {
+  description = "If true, will insert the swing pool nodes into cluster membership."
+  type        = bool
+  default     = false
+  validation {
+    condition     = var.provision_swing_pool == true ? var.create_swing_pool == true : true
+    error_message = "The swing pool cannot be provisioned if the swing pool artifacts are not created."
+  }
+}
+
+variable "swing_node_count" {
+  description = "The number of nodes in the swing pool."
+  type        = number
+}
+
+variable "swing_node_ip_addresses" {
+  description = "The private IP addresses for the nodes in the swing pool."
+  type        = string
+}

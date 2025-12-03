@@ -152,7 +152,7 @@ variable "q_node_count" {
   type        = number
   default     = 3
   validation {
-    condition     = var.q_node_count >= 1
+    condition     = (var.q_node_count >= 1) || (var.hazardous_swing_ops && var.create_swing_pool && var.provision_swing_pool)
     error_message = "Node count must be at least 1."
   }
 }
@@ -267,7 +267,7 @@ variable "q_cluster_floating_ips" {
   type        = number
   default     = 3
   validation {
-    condition     = var.q_cluster_floating_ips == 0 || (var.q_cluster_floating_ips >= var.q_node_count && var.q_cluster_floating_ips <= ceil(var.q_node_count / 2) * 63)
+    condition     = var.q_cluster_floating_ips == 0 || (var.q_cluster_floating_ips >= var.q_node_count && var.q_cluster_floating_ips <= ceil(var.q_node_count / 2) * 63) || (var.hazardous_swing_ops && var.create_swing_pool && var.provision_swing_pool && var.q_cluster_floating_ips <= 63)
     error_message = "The number of floating ips must be at least the number of nodes and cannot exceed 63 per node with half of the nodes down. Set to 0 for no floating IPs."
   }
 }
@@ -348,3 +348,30 @@ variable "freeform_tags" {
   default     = {}
 }
 
+variable "create_swing_pool" {
+  description = "If true, will deploy the OCI artifacts required for a swing pool."
+  type        = bool
+  default     = false
+}
+
+variable "provision_swing_pool" {
+  description = "If true, will insert the swing pool nodes into cluster membership."
+  type        = bool
+  default     = false
+  validation {
+    condition     = var.provision_swing_pool == true ? var.create_swing_pool == true : true
+    error_message = "The swing pool cannot be provisioned if the swing pool artifacts are not created."
+  }
+}
+
+variable "configure_on_swing_pool" {
+  description = "If true, will use a swing pool node for qq operations."
+  type        = bool
+  default     = false
+}
+
+variable "hazardous_swing_ops" {
+  description = "If true, will allow for hazardous swing operations to be performed."
+  type        = bool
+  default     = false
+} 

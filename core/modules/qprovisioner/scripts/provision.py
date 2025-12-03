@@ -46,7 +46,9 @@ import requests
 # Template variables (replaced by Terraform templatefile)
 cluster_node_ip_addresses = "${cluster_node_ip_addresses}"
 clustering_node_ip_address = "${clustering_node_ip_address}"
+swing_node_ip_addresses = "${swing_node_ip_addresses}"
 
+provision_swing_pool = "${provision_swing_pool}"
 
 @dataclass
 class ProvisioningConfig:
@@ -58,6 +60,10 @@ class ProvisioningConfig:
     # Node settings
     node_count: int
     node_ips_and_fault_domains: str
+
+    # Swing pool settings
+    swing_node_count: int
+    swing_node_ip_addresses_and_fault_domains: str
 
     # Storage settings
     storage_uris: str
@@ -89,6 +95,8 @@ def create_provisioning_config() -> ProvisioningConfig:
         dev_environment="${dev_environment}",
         node_count=int("${node_count}"),
         node_ips_and_fault_domains="${node_ip_addresses_and_fault_domains}",
+        swing_node_count=int("${swing_node_count}"),
+        swing_node_ip_addresses_and_fault_domains="${swing_node_ip_addresses_and_fault_domains}",
         clustering_node_ocid="${clustering_node_ocid}",
         storage_uris="${object_storage_uris}",
         soft_capacity_limit="${soft_capacity_limit}",
@@ -195,6 +203,7 @@ def survey_node_state(
 ) -> Tuple[List[str], List[str]]:
     in_quorum_nodes = []
     unconfigured_nodes = []
+    removed_nodes = []
     out_of_quorum_nodes = []
 
     for ip in cluster_node_ip_addresses.split():
@@ -212,6 +221,8 @@ def survey_node_state(
                 in_quorum_nodes.append(ip)
             elif "UNCONFIGURED" in quorum_result.stdout:
                 unconfigured_nodes.append(ip)
+            elif "REMOVED" in quorum_result.stdout:
+                removed_nodes.append(ip)
             else:
                 out_of_quorum_nodes.append(ip)
         except ProvisioningError:
@@ -219,7 +230,7 @@ def survey_node_state(
 
     logging.info(
         f"{len(unconfigured_nodes)} nodes unconfigured, {len(out_of_quorum_nodes)} nodes "
-        f"out of quorum, {len(in_quorum_nodes)} nodes in quorum"
+        f"out of quorum, {len(removed_nodes)} nodes removed, {len(in_quorum_nodes)} nodes in quorum"
     )
 
     return in_quorum_nodes, out_of_quorum_nodes
@@ -336,10 +347,10 @@ def maybe_update_floating_ips(
 
 
 def update_cluster_membership(
-    node_count: int, node_ips_and_fault_domains: str, cluster_node_count_secret_id: str
-) -> None:
+    node_count: int, swing_node_count: int, node_ips_and_fault_domains: str, swing_node_ips_and_fault_domains: str, cluster_node_count_secret_id: str) -> None:
     ips_and_fault_domains = node_ips_and_fault_domains.split()
-    new_node_membership = ips_and_fault_domains[:node_count]
+    swing_ips_and_fault_domains = swing_node_ips_and_fault_domains.split()
+    new_node_membership = ips_and_fault_domains[:node_count] + swing_ips_and_fault_domains
 
     args = [
         "modify_object_backed_cluster_membership",
@@ -363,7 +374,7 @@ def update_cluster_membership(
             current_node_count = len(
                 node_data["membership"]["node_ips_and_fault_domains"]
             )
-            if current_node_count == node_count:
+            if current_node_count == node_count + swing_node_count:
                 logging.info("New cluster membership in effect")
                 break
             logging.info(
@@ -375,7 +386,7 @@ def update_cluster_membership(
         time.sleep(10)
 
     # Update secret with new node count
-    update_secret(cluster_node_count_secret_id, str(len(new_node_membership)))
+    update_secret(cluster_node_count_secret_id, str(len(new_node_membership) - len(swing_ips_and_fault_domains)))
 
 
 def create_cluster(config: ProvisioningConfig) -> None:
@@ -442,20 +453,53 @@ def create_cluster(config: ProvisioningConfig) -> None:
 
 def handle_existing_cluster(
     in_quorum_nodes: List[str],
+    in_quorum_swing_nodes: List[str],
+    provision_swing_pool: bool,
     config: ProvisioningConfig,
     clustering_node_ip_address: str,
     qfsd_version: str,
 ) -> None:
     qq_command(f"login -u admin -p {config.admin_password}")
 
+
+
     # Node add/remove
     if len(in_quorum_nodes) != config.node_count:
+        # Throw error if changing node count and changing swing pool state at the same time
+        if (provision_swing_pool and len(in_quorum_swing_nodes) == 0) or (not provision_swing_pool and len(in_quorum_swing_nodes) > 0):
+            raise ProvisioningError(
+                f"Cannot change node count and change swing pool state at the same time"
+            )
         logging.info(
-            f"Change the number of nodes in the cluster from {len(in_quorum_nodes)} to {config.node_count}"
+            f"Change the number of nodes in the cluster from {len(in_quorum_nodes)} to {config.node_count} nodes"
         )
         update_cluster_membership(
             config.node_count,
+            config.swing_node_count if provision_swing_pool else 0,
             config.node_ips_and_fault_domains,
+            config.swing_node_ip_addresses_and_fault_domains if provision_swing_pool else "",
+            config.cluster_node_count_secret_id,
+        )
+    elif provision_swing_pool == "true" and len(in_quorum_swing_nodes) != config.swing_node_count:
+        logging.info(
+            f"Activate swing pool nodes"
+        )
+        update_cluster_membership(
+            config.node_count,
+            config.swing_node_count,
+            config.node_ips_and_fault_domains,
+            config.swing_node_ip_addresses_and_fault_domains,
+            config.cluster_node_count_secret_id,
+        )
+    elif provision_swing_pool == "false" and len(in_quorum_swing_nodes) > 0:
+        logging.info(
+            f"Deactivate swing pool nodes"
+        )
+        update_cluster_membership(
+            config.node_count,
+            0,
+            config.node_ips_and_fault_domains,
+            "",
             config.cluster_node_count_secret_id,
         )
 
@@ -472,7 +516,7 @@ def handle_existing_cluster(
         qq_command(f"add_object_storage_uris --uris {config.storage_uris}")
         wait_for_new_quorum()
 
-    # Capacity increase
+    # Capacity increasecd 
     cmd = (
         f"/root/bin/oci secrets secret-bundle get --secret-id "
         f"{config.cluster_soft_capacity_limit_secret_id} --auth instance_principal"
@@ -530,10 +574,13 @@ def main() -> None:
     )
 
     logging.info("Starting QProvisioner provisioning")
-
     os.chdir("/root")
     install_oci_cli()
+    logging.info(f"Waiting for clustering nodes to be up and running: {cluster_node_ip_addresses}")
     wait_for_qfsd_installation(cluster_node_ip_addresses)
+    if provision_swing_pool == "true" and len(swing_node_ip_addresses.split()) > 0:
+        logging.info(f"Waiting for swing pool nodes to be up and running: {swing_node_ip_addresses}")
+        wait_for_qfsd_installation(swing_node_ip_addresses)
     download_qq_client()
 
     qfsd_version = get_qfsd_version(clustering_node_ip_address)
@@ -547,13 +594,26 @@ def main() -> None:
             f"abort operation. Please come back when the cluster is in a healthy state"
         )
 
+    in_quorum_swing_nodes = []
+    out_of_quorum_swing_nodes = []
+    if len(swing_node_ip_addresses.split()) > 0:
+        in_quorum_swing_nodes, out_of_quorum_swing_nodes = survey_node_state(
+            qfsd_version, swing_node_ip_addresses
+        )
+
+    if out_of_quorum_swing_nodes:
+        raise ProvisioningError(
+            f"Found out of quorum swing pool nodes at IPs {out_of_quorum_swing_nodes}, "
+            f"abort operation. Please come back when the cluster is in a healthy state"
+        )
+    
     config = create_provisioning_config()
 
-    if not in_quorum_nodes:
+    if not in_quorum_nodes and not in_quorum_swing_nodes:
         create_cluster(config)
     else:
         handle_existing_cluster(
-            in_quorum_nodes, config, clustering_node_ip_address, qfsd_version
+            in_quorum_nodes, in_quorum_swing_nodes, provision_swing_pool, config, clustering_node_ip_address, qfsd_version
         )
 
     logging.info("QProvisioner provisioning completed successfully")

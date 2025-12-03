@@ -4,6 +4,8 @@
 # persistent_storage_vault_ocid - Ocid of the vault in which we store the secrets for persistent storage.
 # object_storage_bucket_count   - The number of object buckets to use for persistent storage. Default value is 16.
 
-region                        = "my_region"
-compartment_ocid              = "my_compartment"
-persistent_storage_vault_ocid = "my_vault"
+region                        = <region_name>
+compartment_ocid              = <compartment_ocid>
+persistent_storage_vault_ocid = <vault_ocid>
+
+object_storage_bucket_count = <object_storage_bucket_count>
