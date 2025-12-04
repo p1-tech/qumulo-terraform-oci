@@ -61,5 +61,6 @@ module "core" {
   create_swing_pool                        = var.create_swing_pool
   provision_swing_pool                     = var.provision_swing_pool
   hazardous_swing_ops                      = var.hazardous_swing_ops
+  configure_on_swing_pool                  = var.configure_on_swing_pool
 }
 
