@@ -28,7 +28,7 @@ output "nodes" {
       name         = node.display_name
       private_ip   = node.private_ip
       id           = node.id
-      fault_domain = (i % length(local.fault_domains)) + 1
+      fault_domain = var.single_fault_domain ? 1 : (i % length(local.fault_domains)) + 1
     }
   ]
 }

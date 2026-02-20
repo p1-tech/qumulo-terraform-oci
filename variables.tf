@@ -182,6 +182,19 @@ variable "dev_environment" {
   default     = false
 }
 
+variable "single_fault_domain" {
+  description = "Places all nodes in a single fault domain instead of distributing across fault domains. Requires dev_environment = true."
+  type        = bool
+  default     = false
+  validation {
+    condition = anytrue([
+      var.single_fault_domain == false,
+      var.dev_environment,
+    ])
+    error_message = "single_fault_domain can only be enabled when dev_environment is true."
+  }
+}
+
 variable "node_instance_shape" {
   description = "The VM shape to use for the Qumulo nodes."
   type        = string

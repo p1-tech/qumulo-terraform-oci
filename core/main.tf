@@ -324,6 +324,7 @@ module "qcluster" {
   qumulo_core_object_uri = var.qumulo_core_rpm_url
 
   availability_domain = var.availability_domain
+  single_fault_domain = var.single_fault_domain
 
   object_storage_uris         = local.object_storage_uris
   access_key_id               = var.custom_secret_key == null ? local.access_key_id : ""
