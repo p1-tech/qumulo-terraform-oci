@@ -28,7 +28,7 @@ locals {
   cluster_node_ips           = join(" ", [for i in module.qcluster.nodes : i.private_ip])
   clustering_node_id         = module.qcluster.nodes[0].id
   clustering_node_ip         = module.qcluster.nodes[0].private_ip
-  node_ips_and_fault_domains = length(module.qcluster.nodes) >= 5 || length(module.qcluster.nodes) == 3 ? join(" ", [for i in module.qcluster.nodes : "${i.private_ip},${i.fault_domain}"]) : join(" ", [for i in module.qcluster.nodes : "${i.private_ip},None"])
+  node_ips_and_fault_domains = !var.single_fault_domain && (length(module.qcluster.nodes) >= 5 || length(module.qcluster.nodes) == 3) ? join(" ", [for i in module.qcluster.nodes : "${i.private_ip},${i.fault_domain}"]) : join(" ", [for i in module.qcluster.nodes : "${i.private_ip},None"])
   object_storage_uris        = join(" ", var.persistent_storage.object_storage_uris)
   product_type               = var.q_cluster_cold ? "ARCHIVE_WITH_IA_STORAGE" : "ACTIVE_WITH_STANDARD_STORAGE"
 }
