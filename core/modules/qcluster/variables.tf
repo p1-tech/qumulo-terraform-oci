@@ -112,6 +112,13 @@ variable "availability_domain" {
   type        = string
 }
 
+variable "single_fault_domain" {
+  description = "The name of a single fault domain to place all nodes in. Leave null to distribute across fault domains."
+  type        = string
+  nullable    = true
+  default     = null
+}
+
 variable "object_storage_uris" {
   description = "The URIs of Oracle object storage that are backing the Qumulo cluster."
   type        = string
