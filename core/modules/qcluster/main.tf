@@ -41,7 +41,7 @@ resource "oci_core_instance" "node" {
   count               = var.node_count
   compartment_id      = var.compartment_ocid
   availability_domain = local.availability_domain
-  fault_domain        = var.single_fault_domain ? local.fault_domains[1].name : local.fault_domains[count.index % length(local.fault_domains)].name
+  fault_domain        = var.single_fault_domain != null ? var.single_fault_domain : local.fault_domains[count.index % length(local.fault_domains)].name
   create_vnic_details {
     assign_ipv6ip             = "false"
     assign_private_dns_record = "true"

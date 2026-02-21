@@ -141,9 +141,10 @@ variable "dev_environment" {
 }
 
 variable "single_fault_domain" {
-  description = "Places all nodes in a single fault domain instead of distributing across fault domains. Requires dev_environment = true."
-  type        = bool
-  default     = false
+  description = "The name of a single fault domain to place all nodes in. Leave null to distribute across fault domains."
+  type        = string
+  nullable    = true
+  default     = null
 }
 
 variable "node_instance_shape" {

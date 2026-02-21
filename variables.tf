@@ -183,16 +183,10 @@ variable "dev_environment" {
 }
 
 variable "single_fault_domain" {
-  description = "Places all nodes in a single fault domain instead of distributing across fault domains. Requires dev_environment = true."
-  type        = bool
-  default     = false
-  validation {
-    condition = anytrue([
-      var.single_fault_domain == false,
-      var.dev_environment,
-    ])
-    error_message = "single_fault_domain can only be enabled when dev_environment is true."
-  }
+  description = "The name of a single fault domain to place all nodes in (e.g. \"FAULT-DOMAIN-2\"). Leave null to distribute across fault domains. Requires dev_environment = true."
+  type        = string
+  nullable    = true
+  default     = null
 }
 
 variable "node_instance_shape" {

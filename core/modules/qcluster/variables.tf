@@ -113,9 +113,10 @@ variable "availability_domain" {
 }
 
 variable "single_fault_domain" {
-  description = "Places all nodes in a single fault domain instead of distributing across fault domains."
-  type        = bool
-  default     = false
+  description = "The name of a single fault domain to place all nodes in. Leave null to distribute across fault domains."
+  type        = string
+  nullable    = true
+  default     = null
 }
 
 variable "object_storage_uris" {
