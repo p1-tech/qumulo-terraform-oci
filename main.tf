@@ -28,6 +28,7 @@ module "core" {
   source = "./core/"
 
   dev_environment                          = var.dev_environment
+  multi_ad_deployment                      = var.multi_ad_deployment
   single_fault_domain                      = var.single_fault_domain
   persistent_storage                       = local.persistent_storage
   node_ssh_public_key_paths                = var.node_ssh_public_key_paths

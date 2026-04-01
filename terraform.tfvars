@@ -1,6 +1,7 @@
 # ****************************** Required *************************************************************
 # ***** Terraform Variables *****
 # region                       - The OCI region in which to deploy the Qumulo cluster
+# multi_ad_deployment         - If true, spread nodes across availability domains; otherwise spread across fault domains in the first availability domain.
 # availability_domain          - The availability domain in which to deploy the Qumulo cluster. Leave it at null to use the default availability domain.
 # tenancy_ocid                 - Ocid of the tenancy in which to deploy the Qumulo cluster
 # compartment_ocid             - Ocid of the compartment in which to deploy the Qumulo cluster
@@ -14,6 +15,7 @@
 # qumulo_core_rpm_url          - URL to object storing a qumulo-qcore.rpm file
 
 region                      = "my_region"
+multi_ad_deployment         = false
 availability_domain         = null
 tenancy_ocid                = "my_tenancy"
 compartment_ocid            = "my_compartment"
