@@ -158,3 +158,8 @@ variable "multi_ad_deployment" {
   type        = bool
   default     = false
 }
+
+variable "availability_domain_names" {
+  description = "The availability domains in the region."
+  type        = list(string)
+}

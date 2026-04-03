@@ -316,4 +316,8 @@ variable "multi_ad_deployment" {
     )
     error_message = "Placement requirement not met: region must have >= 1 availability domain (multi_ad_deployment=true) or the first availability domain must have >= 1 fault domain (multi_ad_deployment=false)."
   }
+  validation {
+    condition     = !var.multi_ad_deployment || var.availability_domain == null
+    error_message = "availability_domain must be null when multi_ad_deployment is true; a single explicit availability domain cannot be combined with multi-AD placement."
+  }
 }

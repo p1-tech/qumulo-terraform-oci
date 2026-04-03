@@ -323,7 +323,9 @@ module "qcluster" {
 
   qumulo_core_object_uri = var.qumulo_core_rpm_url
 
+  multi_ad_deployment = var.multi_ad_deployment
   availability_domain = var.availability_domain
+  availability_domain_names = local.availability_domain_names
   single_fault_domain = var.single_fault_domain
 
   object_storage_uris         = local.object_storage_uris

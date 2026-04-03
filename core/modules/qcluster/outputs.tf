@@ -28,7 +28,9 @@ output "nodes" {
       name         = node.display_name
       private_ip   = node.private_ip
       id           = node.id
-      fault_domain = var.single_fault_domain != null ? 1 : (i % length(local.fault_domains)) + 1
+      availability_domain = node.availability_domain
+      fault_domain = node.fault_domain
+      protection_domain = var.single_fault_domain != null ? var.multi_ad_deployment == false ? (i % length(local.fault_domains)) + 1 : (i % length(var.availability_domain_names)) + 1 : null
     }
   ]
 }
