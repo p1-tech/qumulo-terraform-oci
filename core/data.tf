@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Qumulo
+ * Copyright (c) 2026 Qumulo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,7 +22,13 @@
  * SOFTWARE.
  */
 
-locals {
-  provision_script_path = "${path.module}/scripts/provision.py"
+data "oci_identity_availability_domains" "ads" {
+  compartment_id = var.compartment_ocid
 }
 
+data "oci_identity_fault_domains" "by_availability_domain" {
+  for_each = { for ad in data.oci_identity_availability_domains.ads.availability_domains : ad.name => ad }
+
+  compartment_id      = var.compartment_ocid
+  availability_domain = each.key
+}

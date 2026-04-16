@@ -152,3 +152,14 @@ variable "freeform_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "multi_ad_deployment" {
+  description = "If true, spread nodes across availability domains; otherwise spread across fault domains in the first availability domain."
+  type        = bool
+  default     = false
+}
+
+variable "availability_domain_names" {
+  description = "The availability domains in the region."
+  type        = list(string)
+}

@@ -302,3 +302,22 @@ variable "freeform_tags" {
   type        = map(string)
   default     = {}
 }
+
+variable "multi_ad_deployment" {
+  description = "If true, spread nodes across availability domains; otherwise spread across fault domains in the first availability domain."
+  type        = bool
+  default     = false
+
+  validation {
+    condition = (
+      var.multi_ad_deployment
+      ? length(data.oci_identity_availability_domains.ads.availability_domains) >= 1
+      : length(data.oci_identity_fault_domains.by_availability_domain[var.availability_domain != null ? var.availability_domain : data.oci_identity_availability_domains.ads.availability_domains[0].name].fault_domains) >= 1
+    )
+    error_message = "Placement requirement not met: region must have >= 1 availability domain (multi_ad_deployment=true) or the selected/default single availability domain must have >= 1 fault domain (multi_ad_deployment=false)."
+  }
+  validation {
+    condition     = !var.multi_ad_deployment || var.availability_domain == null
+    error_message = "availability_domain must be null when multi_ad_deployment is true; a single explicit availability domain cannot be combined with multi-AD placement."
+  }
+}
