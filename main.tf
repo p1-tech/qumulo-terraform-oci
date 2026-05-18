@@ -48,6 +48,7 @@ module "core" {
   node_base_image                          = var.node_base_image
   assign_public_ip                         = var.assign_public_ip
   block_volume_count                       = var.block_volume_count
+  block_volume_encryption_key              = var.block_volume_encryption_key
   vault_ocid                               = var.vault_ocid
   qumulo_core_rpm_url                      = var.qumulo_core_rpm_url
   q_cluster_admin_password                 = var.q_cluster_admin_password

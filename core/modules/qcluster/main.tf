@@ -86,7 +86,7 @@ resource "oci_core_instance" "node" {
     source_type             = "image"
     boot_volume_size_in_gbs = 256
     boot_volume_vpus_per_gb = 30
-    # kms_key_id              = var.block_volume_encryption_key
+    kms_key_id              = var.block_volume_encryption_key
   }
 
   lifecycle {
