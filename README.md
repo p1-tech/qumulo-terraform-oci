@@ -231,18 +231,18 @@ The Terraform state is stored locally by default. For production deployments, co
 - The maximum cluster soft capacity limit is 500TB per object storage bucket.
 
 ## Using customer managed keys for encryption at rest
-This scripts supports the use of customer managed keys for encrypting the object storage buckets at rest.  Customer managed keys must be registered as Master Encryption Keys in the same region as the cluster deployment.  The process for deploying a customer managed key is as follows.
+This scripts supports the use of customer managed keys for encrypting the object storage buckets and the block volumes attached to cluster and provisioner instances at rest.  Customer managed keys must be registered as Master Encryption Keys in the same region as the cluster deployment.  The process for deploying customer managed keys is as follows.
 
 ### Customer managed key for persistent object storage
 - Create or import a Master Encryption Key in the same region as the deployed cluster
-- Create a policy that allows the object storage service to access the key (e.g. `Allow service objectstorage-us-phoenix-1 to use keys in compartment Storage`)
+- Create a policy statement that allows the object storage service to access the key (e.g. `Allow service objectstorage-us-phoenix-1 to use keys in compartment Storage`)
   - This policy can be made stricter through the use of conditions, but must allow the objeect storage service to access the selected encryption key
 - Set the variable `object_storage_encryption_key` to the OCID of the desired key before applying the `persistent-storage` stack.
 - This variable can be changed and the stack re-applied without redeploying the persistent storage buckets.  This allows key rotation on an existing cluster's persistent object storage.
 
-### Customer managed key for node block volumes
+### Customer managed key for instance block volumes
 - Create or import a Master Encryption Key in the same region as the deployed cluster
-- Create a policy that allows the object storage service to access the key (e.g. `Allow service blockvolume to use keys in compartment Storage`)
+- Create a policy statement that allows the object storage service to access the key (e.g. `Allow service blockstorage to use keys in compartment Storage`)
   - This policy can be made stricter through the use of conditions, but must allow the objeect storage service to access the selected encryption key
 - Set the variable `block_volume_encryption_key` to the OCID of the desired key before applying the main stack.
 
