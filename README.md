@@ -238,6 +238,7 @@ This scripts supports the use of customer managed keys for encrypting the object
 - Create a policy that allows the object storage service to access the key (e.g. `Allow service objectstorage-us-phoenix-1 to use keys in compartment Storage`)
   - This policy can be made stricter through the use of conditions, but must allow the objeect storage service to access the selected encryption key
 - Set the variable `object_storage_encryption_key` to the OCID of the desired key before applying the `persistent-storage` stack.
+- This variable can be changed and the stack re-applied without redeploying the persistent storage buckets.  This allows key rotation on an existing cluster's persistent object storage.
 
 ## Deploying outside the Home Region
 To deploy a cluster outside the home region, the following changes are required:
