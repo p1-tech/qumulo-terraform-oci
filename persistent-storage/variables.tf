@@ -72,7 +72,7 @@ variable "object_storage_encryption_key" {
   default     = null
   nullable    = true
   validation {
-    condition     = var.object_storage_encryption_key == null || substr(var.object_storage_encryption_key, 0, 13) == "ocid1.key.oc1."
+    condition     = var.object_storage_encryption_key == null || substr(var.object_storage_encryption_key, 0, 14) == "ocid1.key.oc1."
     error_message = "object_storage_encryption_key must either be null or begin with ocid1.key.oc1."
   }
 }
