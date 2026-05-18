@@ -79,6 +79,11 @@ variable "instance_ssh_public_key_strings" {
   type        = list(string)
 }
 
+variable "block_volume_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for block volume encryption at rest."
+  type        = string
+}
+
 variable "cluster_node_ip_addresses" {
   description = "The private IP addresses for the nodes in the Qumulo cluster."
   type        = string

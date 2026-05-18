@@ -67,6 +67,11 @@ variable "persisted_disk_count" {
   type        = number
 }
 
+variable "block_volume_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for block volume encryption at rest."
+  type        = string
+}
+
 variable "node_instance_shape" {
   description = "The VM shape to use for the Qumulo nodes."
   type        = string

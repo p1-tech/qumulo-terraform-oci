@@ -232,6 +232,17 @@ variable "block_volume_count" {
   }
 }
 
+variable "block_volume_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for block volume encryption at rest."
+  type        = string
+  default     = null
+  nullable    = true
+  validation {
+    condition     = var.block_volume_encryption_key == null || substr(var.block_volume_encryption_key, 0, 14) == "ocid1.key.oc1."
+    error_message = "block_volume_encryption_key must either be null or begin with ocid1.key.oc1."
+  }
+}
+
 variable "vault_ocid" {
   description = "The OCID of an existing vault to be used to store the cluster secrets."
   type        = string

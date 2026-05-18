@@ -88,6 +88,7 @@ resource "oci_core_instance" "provisioner" {
     source_id               = data.oci_core_images.base_image.images[0].id
     source_type             = "image"
     boot_volume_vpus_per_gb = 20
+    kms_key_id              = var.block_volume_encryption_key
   }
   instance_options {
     are_legacy_imds_endpoints_disabled = true
