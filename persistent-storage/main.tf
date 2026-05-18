@@ -111,6 +111,7 @@ resource "oci_objectstorage_bucket" "bucket" {
   compartment_id = var.compartment_ocid
   name           = "${local.deployment_unique_name}-bucket-${count.index + 1}"
   namespace      = local.namespace
+  kms_key_id     = var.object_storage_encryption_key
   freeform_tags  = var.freeform_tags
   defined_tags   = length(var.defined_tags) > 0 ? var.defined_tags : null
 

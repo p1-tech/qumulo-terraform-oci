@@ -230,6 +230,13 @@ The Terraform state is stored locally by default. For production deployments, co
 - Changing a cluster of 3 nodes or 5 or more nodes to 4 nodes is not supported due to fault domain tolerence incompatibility, vice versa.
 - The maximum cluster soft capacity limit is 500TB per object storage bucket.
 
+## Using customer managed keys for encryption at rest
+This scripts supports the use of customer managed keys for encrypting the object storage buckets at rest.  Customer managed keys must be registered as Master Encryption Keys in the same region as the cluster deployment.  The process for deploying a customer managed key is as follows.
+### Customer managed key for persistent object storage
+- Create or import a Master Encryption Key in the same region as the deployed cluster
+- Create a policy that allows the object storage service to access the key (e.g. `Allow service objectstorage-us-phoenix-1 to use keys in compartment Security`)
+- Set the variable `object_storage_encryption_key` to the OCID of the desired key before applying the `persistent-storage` stack.
+
 ## Deploying outside the Home Region
 To deploy a cluster outside the home region, the following changes are required:
 - Update the `region` variable in `terraform.tfvars` to the region where you want to deploy the cluster.
