@@ -29,6 +29,7 @@ resource "oci_core_volume" "permanent_disk" {
   display_name        = "${var.deployment_unique_name}-${var.node_id + 1}-permanent-disk-${count.index + 1}"
   size_in_gbs         = var.size_in_gbs
   vpus_per_gb         = var.vpus_per_gb
+  kms_key_id          = var.block_volume_encryption_key
   defined_tags        = length(var.defined_tags) > 0 ? var.defined_tags : null
   freeform_tags       = var.freeform_tags
 

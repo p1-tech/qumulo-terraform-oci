@@ -32,6 +32,11 @@ variable "persisted_disk_count" {
   type        = number
 }
 
+variable "block_volume_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for block volume encryption at rest."
+  type        = string
+}
+
 variable "availability_domain" {
   description = "The availability domain to be used for the cluster resources."
   type        = string

@@ -66,6 +66,17 @@ variable "object_storage_bucket_count" {
   }
 }
 
+variable "object_storage_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for bucket encryption at rest."
+  type        = string
+  default     = null
+  nullable    = true
+  validation {
+    condition     = var.object_storage_encryption_key == null || substr(var.object_storage_encryption_key, 0, 14) == "ocid1.key.oc1."
+    error_message = "object_storage_encryption_key must either be null or begin with ocid1.key.oc1."
+  }
+}
+
 variable "region" {
   description = "The OCI region that you want to deploy into. EX: us-phoenix-1"
   type        = string

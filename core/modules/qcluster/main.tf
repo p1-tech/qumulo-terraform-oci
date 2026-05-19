@@ -86,6 +86,7 @@ resource "oci_core_instance" "node" {
     source_type             = "image"
     boot_volume_size_in_gbs = 256
     boot_volume_vpus_per_gb = 30
+    kms_key_id              = var.block_volume_encryption_key
   }
 
   lifecycle {
@@ -136,15 +137,16 @@ module "disk" {
   count  = var.node_count
   source = "../qcluster-disk"
 
-  availability_domain    = local.instance_placement[count.index].availability_domain
-  compartment_ocid       = var.compartment_ocid
-  deployment_unique_name = var.deployment_unique_name
-  instance_id            = oci_core_instance.node[count.index].id
-  node_id                = count.index
-  disk_count             = var.permanent_disk_count
-  persisted_disk_count   = var.persisted_disk_count
-  size_in_gbs            = "270"
-  vpus_per_gb            = "10"
-  defined_tags           = var.defined_tags
-  freeform_tags          = var.freeform_tags
+  availability_domain         = local.instance_placement[count.index].availability_domain
+  compartment_ocid            = var.compartment_ocid
+  deployment_unique_name      = var.deployment_unique_name
+  instance_id                 = oci_core_instance.node[count.index].id
+  node_id                     = count.index
+  disk_count                  = var.permanent_disk_count
+  persisted_disk_count        = var.persisted_disk_count
+  size_in_gbs                 = "270"
+  vpus_per_gb                 = "10"
+  block_volume_encryption_key = var.block_volume_encryption_key
+  defined_tags                = var.defined_tags
+  freeform_tags               = var.freeform_tags
 }

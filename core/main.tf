@@ -307,11 +307,12 @@ module "qcluster" {
   compartment_ocid = var.compartment_ocid
   subnet_ocid      = var.subnet_ocid
 
-  node_count           = var.q_node_count
-  permanent_disk_count = local.permanent_disk_count
-  floating_ip_count    = var.q_cluster_floating_ips
-  persisted_node_count = tonumber(data.external.cluster_node_count.result.value)
-  persisted_disk_count = tonumber(data.external.deployed_permanent_disk_count.result.value)
+  node_count                  = var.q_node_count
+  permanent_disk_count        = local.permanent_disk_count
+  block_volume_encryption_key = var.block_volume_encryption_key
+  floating_ip_count           = var.q_cluster_floating_ips
+  persisted_node_count        = tonumber(data.external.cluster_node_count.result.value)
+  persisted_disk_count        = tonumber(data.external.deployed_permanent_disk_count.result.value)
 
   node_instance_shape = var.node_instance_shape
   node_instance_ocpus = var.node_instance_ocpus
@@ -323,10 +324,10 @@ module "qcluster" {
 
   qumulo_core_object_uri = var.qumulo_core_rpm_url
 
-  multi_ad_deployment = var.multi_ad_deployment
-  availability_domain = var.availability_domain
+  multi_ad_deployment       = var.multi_ad_deployment
+  availability_domain       = var.availability_domain
   availability_domain_names = local.availability_domain_names
-  single_fault_domain = var.single_fault_domain
+  single_fault_domain       = var.single_fault_domain
 
   object_storage_uris         = local.object_storage_uris
   access_key_id               = var.custom_secret_key == null ? local.access_key_id : ""
@@ -350,11 +351,12 @@ module "qprovisioner" {
   compartment_ocid = var.compartment_ocid
   subnet_ocid      = var.subnet_ocid
 
-  node_count           = var.q_cluster_node_count
-  permanent_disk_count = local.permanent_disk_count
-  instance_shape       = var.provisioner_instance_shape
-  instance_ocpus       = var.provisioner_instance_ocpus
-  assign_public_ip     = var.assign_public_ip
+  node_count                  = var.q_cluster_node_count
+  permanent_disk_count        = local.permanent_disk_count
+  instance_shape              = var.provisioner_instance_shape
+  instance_ocpus              = var.provisioner_instance_ocpus
+  assign_public_ip            = var.assign_public_ip
+  block_volume_encryption_key = var.block_volume_encryption_key
 
   instance_ssh_public_key_paths   = var.node_ssh_public_key_paths
   instance_ssh_public_key_strings = var.node_ssh_public_key_strings
