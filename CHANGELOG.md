@@ -1,5 +1,13 @@
 # Changelog
 
+## [2.4.0](https://github.com/Qumulo/qumulo-terraform-oci/compare/qumulo-terraform-oci-v2.3.0...qumulo-terraform-oci-v2.4.0) (2026-05-20)
+
+
+### Features
+
+* update version to 2.4.0 ([2b13bcd](https://github.com/Qumulo/qumulo-terraform-oci/commit/2b13bcd30c69d129796aaee35cc87f1ffa09a572))
+* update version to 2.4.0 ([74e97df](https://github.com/Qumulo/qumulo-terraform-oci/commit/74e97dfd809495d15d77111568fea07ca97e1cb4))
+
 ## [2.3.0](https://github.com/Qumulo/qumulo-terraform-oci/compare/qumulo-terraform-oci-v2.2.0...qumulo-terraform-oci-v2.3.0) (2026-04-21)
 
 
