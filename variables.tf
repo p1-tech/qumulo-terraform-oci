@@ -304,7 +304,22 @@ variable "create_dynamic_group_and_identity_policy" {
 }
 
 variable "persistent_storage_access_model" {
-  description = "Configuration settings for cluster access to the persistent object storage"
+  description = <<EOT
+Configuration settings for cluster access to the persistent object storage
+
+Attributes:
+- mode:
+    One of:
+      - classic (default) - creates a new user and group for object storage access in the tenancy's default IAM domain
+      - explicit - uses explicit AWS access key and secret key from pre-provisioned user with full access to the persistent object storage
+      - domain - creates a new user and group for object storage access in a user specified IAM domain
+
+- explicit_aws_access_key_id:
+    Required when access_style = "explicit"
+
+- explicit_aws_secret_key:
+    Required when access_style = "explicit"
+EOT
   type = object({
     access_style               = optional(string, "classic")
     explicit_aws_access_key_id = optional(string)
