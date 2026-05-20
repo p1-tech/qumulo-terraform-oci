@@ -303,6 +303,41 @@ variable "create_dynamic_group_and_identity_policy" {
   default     = true
 }
 
+variable "persistent_storage_access_model" {
+  description = "Configuration settings for cluster access to the persistent object storage"
+  type = object({
+    access_style               = optional(string, "classic")
+    explicit_aws_access_key_id = optional(string)
+    explicit_aws_secret_key    = optional(string)
+  })
+  default = {
+    access_style               = "classic",
+    explicit_aws_access_key_id = null,
+    explicit_aws_secret_key    = null
+  }
+  validation {
+    condition = contains(
+      ["explicit", "classic", "domain"],
+      var.persistent_storage_access_model.access_style
+    )
+    error_message = "persistent_storage_access_model.access_style must be one of: explicit, classic, or domain."
+  }
+  validation {
+    condition = (
+      var.persistent_storage_access_model.access_style != "explicit"
+      ||
+      (
+        try(length(trim(var.persistent_storage_access_model.explicit_aws_access_key_id)) > 0, false)
+        &&
+        try(length(trim(var.persistent_storage_access_model.explicit_aws_secret_key)) > 0, false)
+      )
+    )
+
+    error_message = "explicit_aws_access_key_id and explicit_aws_secret_key must be provided when access_style is 'explicit'."
+  }
+}
+
+
 variable "custom_secret_key_id" {
   description = "The id of a secret key for a user that has permissions to manage object storage in the cluster's compartment."
   type        = string

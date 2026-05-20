@@ -55,8 +55,8 @@ module "core" {
   q_cluster_floating_ips                   = var.q_cluster_floating_ips
   availability_domain                      = var.availability_domain
   create_dynamic_group_and_identity_policy = var.create_dynamic_group_and_identity_policy
-  custom_secret_key_id                     = var.custom_secret_key_id
-  custom_secret_key                        = var.custom_secret_key
+  custom_secret_key_id                     = var.persistent_storage_access_model.explicit_aws_access_key_id
+  custom_secret_key                        = var.persistent_storage_access_model.explicit_aws_secret_key
   vault_key_ocid                           = var.vault_key_ocid
   provisioner_instance_shape               = var.provisioner_instance_shape
   provisioner_instance_ocpus               = var.provisioner_instance_ocpus
