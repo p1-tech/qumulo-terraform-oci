@@ -58,8 +58,9 @@ locals {
   deployment_unique_name = null_resource.name_lock.triggers.deployment_unique_name
 }
 
-resource "oci_identity_user" "cluster_user" {
-  count          = var.custom_secret_key_id == null ? 1 : 0
+# Classic access model Resources
+resource "oci_identity_user" "classic_cluster_user" {
+  count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
   compartment_id = var.tenancy_ocid
   name           = "${local.deployment_unique_name}-user"
   description    = "The user used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
@@ -68,14 +69,14 @@ resource "oci_identity_user" "cluster_user" {
   freeform_tags  = var.freeform_tags
 }
 
-resource "oci_identity_customer_secret_key" "cluster_secret_key" {
-  count        = var.custom_secret_key_id == null ? 1 : 0
-  user_id      = oci_identity_user.cluster_user[0].id
+resource "oci_identity_customer_secret_key" "classic_cluster_secret_key" {
+  count        = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
+  user_id      = oci_identity_user.classic_cluster_user[0].id
   display_name = "${local.deployment_unique_name}-secret-key"
 }
 
-resource "oci_identity_group" "cluster_identity_group" {
-  count          = var.custom_secret_key_id == null ? 1 : 0
+resource "oci_identity_group" "classic_cluster_identity_group" {
+  count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
   compartment_id = var.tenancy_ocid
   description    = "The identity group used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
   name           = "${local.deployment_unique_name}-identity-group"
@@ -83,14 +84,90 @@ resource "oci_identity_group" "cluster_identity_group" {
   freeform_tags  = var.freeform_tags
 }
 
-resource "oci_identity_user_group_membership" "cluster_group_membership" {
-  count    = var.custom_secret_key_id == null ? 1 : 0
-  group_id = oci_identity_group.cluster_identity_group[0].id
-  user_id  = oci_identity_user.cluster_user[0].id
+resource "oci_identity_user_group_membership" "classic_cluster_group_membership" {
+  count    = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
+  group_id = oci_identity_group.classic_cluster_identity_group[0].id
+  user_id  = oci_identity_user.classic_cluster_user[0].id
 }
 
-resource "oci_identity_policy" "cluster_policy" {
-  count          = var.custom_secret_key_id == null ? 1 : 0
+resource "oci_identity_policy" "classic_cluster_policy" {
+  count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
+  compartment_id = var.compartment_ocid
+  description    = "The identity policy used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
+  name           = "${local.deployment_unique_name}-classic-cluster-identity-policy"
+  defined_tags   = length(var.defined_tags) > 0 ? var.defined_tags : null
+  freeform_tags  = var.freeform_tags
+
+  statements = [
+    "Allow group ${oci_identity_group.classic_cluster_identity_group[0].name} to manage object-family in compartment id ${var.persistent_storage.compartment_ocid} where target.bucket.name = /${var.persistent_storage.bucket_prefix}-bucket-*/"
+  ]
+}
+
+
+# Domain access model Resources
+resource "oci_identity_domains_user" "domain_cluster_user" {
+  count = var.persistent_storage_access_model.access_style == "domain" ? 1 : 0
+
+  schemas = [
+    "urn:ietf:params:scim:schemas:core:2.0:User",
+    "urn:ietf:params:scim:schemas:oracle:idcs:extension:OCITags",
+    "urn:ietf:params:scim:schemas:oracle:idcs:extension:capabilities:User",
+    "urn:ietf:params:scim:schemas:oracle:idcs:extension:user:User",
+  ]
+  attributes    = "tags"
+  idcs_endpoint = var.persistent_storage_access_model.domain_idcs_endpoint
+  user_name     = "${local.deployment_unique_name}-user"
+  description   = "The user used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
+  user_type     = "Service"
+  name {
+    given_name  = local.deployment_unique_name
+    family_name = "qumulo"
+  }
+  emails {
+    value   = local.cluster_email
+    type    = "work"
+    primary = true
+  }
+  urnietfparamsscimschemasoracleidcsextensioncapabilities_user {
+    can_use_api_keys                 = false
+    can_use_auth_tokens              = false
+    can_use_console                  = false
+    can_use_console_password         = false
+    can_use_customer_secret_keys     = true
+    can_use_db_credentials           = false
+    can_use_oauth2client_credentials = false
+    can_use_smtp_credentials         = false
+  }
+}
+
+resource "oci_identity_domains_customer_secret_key" "domain_cluster_secret_key" {
+  count         = var.persistent_storage_access_model.access_style == "domain" ? 1 : 0
+  idcs_endpoint = var.persistent_storage_access_model.domain_idcs_endpoint
+  schemas       = ["urn:ietf:params:scim:schemas:oracle:idcs:customerSecretKey"]
+  display_name  = "${local.deployment_unique_name}-secret-key"
+  user {
+    value = oci_identity_domains_user.domain_cluster_user[0].id
+  }
+}
+
+resource "oci_identity_domains_group" "domain_cluster_identity_group" {
+  count = var.persistent_storage_access_model.access_style == "domain" ? 1 : 0
+  schemas = [
+    "urn:ietf:params:scim:schemas:core:2.0:Group",
+    "urn:ietf:params:scim:schemas:oracle:idcs:extension:OCITags",
+  ]
+  attributes    = "members,tags"
+  idcs_endpoint = var.persistent_storage_access_model.domain_idcs_endpoint
+  display_name  = "${local.deployment_unique_name}-domain-identity-group"
+
+  members {
+    type  = "User"
+    value = oci_identity_domains_user.domain_cluster_user[0].id
+  }
+}
+
+resource "oci_identity_policy" "domain_cluster_policy" {
+  count          = var.persistent_storage_access_model.access_style == "domain" ? 1 : 0
   compartment_id = var.compartment_ocid
   description    = "The identity policy used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
   name           = "${local.deployment_unique_name}-cluster-identity-policy"
@@ -98,11 +175,13 @@ resource "oci_identity_policy" "cluster_policy" {
   freeform_tags  = var.freeform_tags
 
   statements = [
-    "Allow group ${oci_identity_group.cluster_identity_group[0].name} to manage object-family in compartment id ${var.persistent_storage.compartment_ocid} where target.bucket.name = /${var.persistent_storage.bucket_prefix}-bucket-*/"
+    "Allow group '${var.persistent_storage_access_model.domain_identity_domain_display_name}'/'${oci_identity_domains_group.domain_cluster_identity_group[0].display_name}' to manage object-family in compartment id ${var.persistent_storage.compartment_ocid} where target.bucket.name = /${var.persistent_storage.bucket_prefix}-bucket-*/"
   ]
 }
 
 
+# Node access Dynamic Group and Policy
+#   Skipped if create_dynamic_group_and_identity_policy is false
 resource "oci_identity_dynamic_group" "instance_dynamic_group" {
   count          = var.create_dynamic_group_and_identity_policy ? 1 : 0
   compartment_id = var.tenancy_ocid
@@ -141,7 +220,8 @@ resource "oci_identity_policy" "subnet_policy" {
   ]
 }
 
-
+# Vault Master Encryption Key
+#   Skipped if vault_key_ocid is provided
 resource "oci_kms_key" "vault_key" {
   count          = var.vault_key_ocid == null ? 1 : 0
   compartment_id = var.compartment_ocid
@@ -156,8 +236,8 @@ resource "oci_kms_key" "vault_key" {
 }
 
 locals {
-  access_key_id            = sensitive(var.custom_secret_key_id != null ? var.custom_secret_key_id : oci_identity_customer_secret_key.cluster_secret_key[0].id)
-  secret_key               = sensitive(var.custom_secret_key != null ? var.custom_secret_key : oci_identity_customer_secret_key.cluster_secret_key[0].key)
+  access_key_id            = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_aws_access_key_id : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].access_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].id)
+  secret_key               = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_aws_secret_key : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].secret_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].key)
   retrieve_stored_value_sh = ["${path.module}/scripts/retrieve_stored_value.sh"]
   vault_key_ocid           = var.vault_key_ocid != null ? var.vault_key_ocid : oci_kms_key.vault_key[0].id
 }
@@ -295,8 +375,10 @@ data "oci_core_images" "latest" {
 }
 
 locals {
-  node_base_image = var.node_base_image != null ? var.node_base_image : data.oci_core_images.latest.images[0].id
+  node_base_image   = var.node_base_image != null ? var.node_base_image : data.oci_core_images.latest.images[0].id
+  cluster_policy_id = var.persistent_storage_access_model.access_style == "explicit" ? "1" : var.persistent_storage_access_model.access_style == "classic" ? oci_identity_policy.classic_cluster_policy[0].id : oci_identity_policy.domain_cluster_policy[0].id
 }
+
 
 module "qcluster" {
   source = "./modules/qcluster"
@@ -330,16 +412,16 @@ module "qcluster" {
   single_fault_domain       = var.single_fault_domain
 
   object_storage_uris         = local.object_storage_uris
-  access_key_id               = var.custom_secret_key == null ? local.access_key_id : ""
-  secret_key                  = var.custom_secret_key == null ? local.secret_key : ""
+  access_key_id               = local.access_key_id
+  secret_key                  = local.secret_key
   object_storage_access_delay = var.object_storage_access_delay
 
   defined_tags  = var.defined_tags
   freeform_tags = var.freeform_tags
 
   depends_on = [
-    oci_identity_policy.cluster_policy,
-    oci_identity_policy.instance_policy
+    oci_identity_policy.instance_policy,
+    local.cluster_policy_id
   ]
 }
 
