@@ -36,7 +36,10 @@ The deployment creates the following components:
       ```
           "Allow group <group created above> to manage object-family in compartment id <cluster deployment compartment> where target.bucket.name = <bucket-prefix in output from persistent storage terraform stack>-bucket-*/"
       ```
-      * set the variables `custom_secret_key_id` and `custom_secret_key` to the Customer Secret Key OCID and key respectively.
+      * set the following variables in the `persistent_storage_access_model` object:
+        * set `access_style` to `explicit`
+        * set `explicit_customer_secret_key_access_key` to the value of the Customer Secret Key's Access ID (not the OCID)
+        * set `explicit_customer_secret_key_secret_key` to the value of the Customer Secret Key's Secret
 
 4. OCI Cluster User Permissions:
 

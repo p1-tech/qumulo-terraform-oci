@@ -314,10 +314,10 @@ Attributes:
       - explicit - uses explicit AWS access key and secret key from pre-provisioned user with full access to the persistent object storage
       - domain - creates a new user and group for object storage access in a user specified IAM domain
 
-- explicit_aws_access_key_id:
+- explicit_customer_secret_key_access_key:
     Required when access_style = "explicit"
 
-- explicit_aws_secret_key:
+- explicit_customer_secret_key_secret_key:
     Required when access_style = "explicit"
 
 - domain_idcs_endpoint:
@@ -327,18 +327,18 @@ Attributes:
     Required when access_style = "domain"
 EOT
   type = object({
-    access_style                        = optional(string, "classic")
-    explicit_aws_access_key_id          = optional(string)
-    explicit_aws_secret_key             = optional(string)
-    domain_idcs_endpoint                = optional(string)
-    domain_identity_domain_display_name = optional(string)
+    access_style                            = optional(string, "classic")
+    explicit_customer_secret_key_access_key = optional(string)
+    explicit_customer_secret_key_secret_key = optional(string)
+    domain_idcs_endpoint                    = optional(string)
+    domain_identity_domain_display_name     = optional(string)
   })
   default = {
-    access_style                        = "classic",
-    explicit_aws_access_key_id          = null,
-    explicit_aws_secret_key             = null,
-    domain_idcs_endpoint                = null,
-    domain_identity_domain_display_name = null
+    access_style                            = "classic",
+    explicit_customer_secret_key_access_key = null,
+    explicit_customer_secret_key_secret_key = null,
+    domain_idcs_endpoint                    = null,
+    domain_identity_domain_display_name     = null
   }
   validation {
     condition = contains(
@@ -352,13 +352,13 @@ EOT
       var.persistent_storage_access_model.access_style != "explicit"
       ||
       (
-        try(length(trimspace(var.persistent_storage_access_model.explicit_aws_access_key_id)) > 0, false)
+        try(length(trimspace(var.persistent_storage_access_model.explicit_customer_secret_key_access_key)) > 0, false)
         &&
-        try(length(trimspace(var.persistent_storage_access_model.explicit_aws_secret_key)) > 0, false)
+        try(length(trimspace(var.persistent_storage_access_model.explicit_customer_secret_key_secret_key)) > 0, false)
       )
     )
 
-    error_message = "explicit_aws_access_key_id and explicit_aws_secret_key must be provided when access_style is 'explicit'."
+    error_message = "explicit_customer_secret_key_access_key and explicit_customer_secret_key_secret_key must be provided when access_style is 'explicit'."
   }
   validation {
     condition = (

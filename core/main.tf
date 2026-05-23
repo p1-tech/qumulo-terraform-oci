@@ -236,8 +236,8 @@ resource "oci_kms_key" "vault_key" {
 }
 
 locals {
-  access_key_id            = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_aws_access_key_id : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].access_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].id)
-  secret_key               = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_aws_secret_key : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].secret_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].key)
+  access_key_id            = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_customer_secret_key_access_key : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].access_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].id)
+  secret_key               = sensitive(var.persistent_storage_access_model.access_style == "explicit" ? var.persistent_storage_access_model.explicit_customer_secret_key_secret_key : var.persistent_storage_access_model.access_style == "domain" ? oci_identity_domains_customer_secret_key.domain_cluster_secret_key[0].secret_key : oci_identity_customer_secret_key.classic_cluster_secret_key[0].key)
   retrieve_stored_value_sh = ["${path.module}/scripts/retrieve_stored_value.sh"]
   vault_key_ocid           = var.vault_key_ocid != null ? var.vault_key_ocid : oci_kms_key.vault_key[0].id
 }
