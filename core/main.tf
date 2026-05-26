@@ -131,6 +131,22 @@ resource "oci_identity_policy" "classic_cluster_policy" {
 
 
 # Domain access model Resources
+locals {
+  idc_defined_tag_list = [
+    for k, v in var.defined_tags : {
+      namespace = split(".", k)[0]
+      key       = trimprefix(k, "${split(".", k)[0]}.")
+      value     = v
+    }
+  ]
+  idc_freeform_tag_list = [
+    for k, v in var.freeform_tags : {
+      key   = k
+      value = v
+    }
+  ]
+}
+
 resource "oci_identity_domains_user" "domain_cluster_user" {
   count = var.persistent_storage_access_model.access_style == "domain" ? 1 : 0
 
@@ -164,6 +180,24 @@ resource "oci_identity_domains_user" "domain_cluster_user" {
     can_use_oauth2client_credentials = false
     can_use_smtp_credentials         = false
   }
+  urnietfparamsscimschemasoracleidcsextension_oci_tags {
+    dynamic "defined_tags" {
+      for_each = { for i, t in local.idc_defined_tag_list : "${t.namespace}.${t.key}" => t }
+      content {
+        namespace = defined_tags.value.namespace
+        key       = defined_tags.value.key
+        value     = defined_tags.value.value
+      }
+    }
+
+    dynamic "freeform_tags" {
+      for_each = { for t in local.idc_freeform_tag_list : t.key => t }
+      content {
+        key   = freeform_tags.value.key
+        value = freeform_tags.value.value
+      }
+    }
+  }
 }
 
 resource "oci_identity_domains_customer_secret_key" "domain_cluster_secret_key" {
@@ -189,6 +223,24 @@ resource "oci_identity_domains_group" "domain_cluster_identity_group" {
   members {
     type  = "User"
     value = oci_identity_domains_user.domain_cluster_user[0].id
+  }
+  urnietfparamsscimschemasoracleidcsextension_oci_tags {
+    dynamic "defined_tags" {
+      for_each = { for i, t in local.idc_defined_tag_list : "${t.namespace}.${t.key}" => t }
+      content {
+        namespace = defined_tags.value.namespace
+        key       = defined_tags.value.key
+        value     = defined_tags.value.value
+      }
+    }
+
+    dynamic "freeform_tags" {
+      for_each = { for t in local.idc_freeform_tag_list : t.key => t }
+      content {
+        key   = freeform_tags.value.key
+        value = freeform_tags.value.value
+      }
+    }
   }
 }
 
