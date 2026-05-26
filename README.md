@@ -259,6 +259,15 @@ To deploy a cluster outside the home region, the following changes are required:
 - The Secrets Vaults for the cluster and persistent storage must be in the same region as the cluster.
 - You must use a precreated dynamic group and identity policy created in the home region for the cluster.  Set `create_dynamic_group_and_identity_policy` to `false` in `terraform.tfvars`.  Follow the instruction in the [Prerequisites](#prerequisites) section 4.B to create the dynamic group and identity policy.
 
+## Upgrading from previous versions of this Terraform
+When upgrading from release 2.4.0 or earlier, the following changes must be made to prevent cluster redeployment
+- Do not set customer defined encryption keys for block volumes, setting customer defined keys for persistent storage buckets is supported
+- If using the `custom_secret_key_id` and `custom_secret_key` variables, add the `persistent_storage_access_model` block and make the following changes
+  - set `access_style` to `explicit`
+  - set `explicit_customer_secret_key_access_key` to the value of `custom_secret_key_id`
+  - set `explicit_customer_secret_key_secret_key` to the value of `custom_secret_key`
+- Otherwise, add the `persistent_storage_access_model` block and set `access_style` to `classic`
+
 ## Support
 
 For issues beyond the scope of this module:

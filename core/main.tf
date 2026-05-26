@@ -120,7 +120,7 @@ resource "oci_identity_policy" "classic_cluster_policy" {
   count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
   compartment_id = var.compartment_ocid
   description    = "The identity policy used by the ${local.deployment_unique_name} Qumulo cluster to authenticate to object storage buckets."
-  name           = "${local.deployment_unique_name}-classic-cluster-identity-policy"
+  name           = "${local.deployment_unique_name}-cluster-identity-policy"
   defined_tags   = length(var.defined_tags) > 0 ? var.defined_tags : null
   freeform_tags  = var.freeform_tags
 
