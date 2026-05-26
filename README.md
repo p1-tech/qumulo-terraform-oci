@@ -30,7 +30,7 @@ The deployment creates the following components:
 
       B. Precreated User, Group, and Identity Policy
       * Create a new User
-      * Create a Customer Secret Key for this user, retain these values for use below
+      * Create a Customer Secret Key for this user, retain the Access Key and Secret Key values for use below
       * Create a Group that includes this user
       * Create an Identity Policy that includes the statement:
       ```
