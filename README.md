@@ -267,6 +267,7 @@ When upgrading from release 2.4.0 or earlier, the following changes must be made
   - set `explicit_customer_secret_key_access_key` to the value of `custom_secret_key_id`
   - set `explicit_customer_secret_key_secret_key` to the value of `custom_secret_key`
 - Otherwise, add the `persistent_storage_access_model` block and set `access_style` to `classic`
+- Apply the terraform stack to update the resource identities associated with persistent storage access.  There should be no changes to the deployed cluster resources.
 
 ## Support
 
