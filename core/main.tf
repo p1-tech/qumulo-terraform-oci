@@ -79,6 +79,11 @@ moved {
   to   = oci_identity_user_group_membership.classic_cluster_group_membership
 }
 
+moved {
+  from = oci_identity_policy.cluster_policy
+  to   = oci_identity_policy.classic_cluster_policy
+}
+
 # Classic access model Resources
 resource "oci_identity_user" "classic_cluster_user" {
   count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
