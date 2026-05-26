@@ -58,6 +58,27 @@ locals {
   deployment_unique_name = null_resource.name_lock.triggers.deployment_unique_name
 }
 
+# Directives to help migration from older versions of the module
+moved {
+  from = oci_identity_user.cluster_user
+  to = oci_identity_user.classic_cluster_user
+}
+
+moved {
+  from = oci_identity_customer_secret_key.cluster_secret_key
+  to = oci_identity_customer_secret_key.classic_cluster_secret_key
+}
+
+moved {
+  from = oci_identity_group.cluster_identity_group
+  to = oci_identity_group.classic_cluster_identity_group
+}
+
+moved {
+  from = oci_identity_user_group_membership.cluster_group_membership
+  to = oci_identity_user_group_membership.classic_cluster_group_membership
+}
+
 # Classic access model Resources
 resource "oci_identity_user" "classic_cluster_user" {
   count          = var.persistent_storage_access_model.access_style == "classic" ? 1 : 0
