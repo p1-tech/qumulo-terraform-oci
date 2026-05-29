@@ -1,5 +1,25 @@
 # Changelog
 
+## [2.5.0](https://github.com/Qumulo/qumulo-terraform-oci/compare/qumulo-terraform-oci-v2.4.0...qumulo-terraform-oci-v2.5.0) (2026-05-29)
+
+
+### Features
+
+* add move block for identity policy ([7a1bb03](https://github.com/Qumulo/qumulo-terraform-oci/commit/7a1bb03aa80b01e31db35b9f61791eae10f1a937))
+* add moved blocks for compatibility ([b0caa17](https://github.com/Qumulo/qumulo-terraform-oci/commit/b0caa1738c3546e23c596c95cece16b5ce0249b4))
+* add tags to domain identity resources ([304feac](https://github.com/Qumulo/qumulo-terraform-oci/commit/304feac00b4ab9dc899589fb4824412cf31b68de))
+* create persistent storage access model variable ([38ea5d4](https://github.com/Qumulo/qumulo-terraform-oci/commit/38ea5d4de258ee4a244725d1ff2621340744d85f))
+* update identity policy name to prevent redeployment event ([0060197](https://github.com/Qumulo/qumulo-terraform-oci/commit/0060197c2b00d377b074dc5a0aac80f8afb12506))
+* update OCI provider version ([9bc67fd](https://github.com/Qumulo/qumulo-terraform-oci/commit/9bc67fd13452bc0d658ab0888d1b719af77a3a21))
+
+
+### Bug Fixes
+
+* refactor Customer Secret Key names ([e2f371b](https://github.com/Qumulo/qumulo-terraform-oci/commit/e2f371b070786d5dd5e05d3e17522ea589456f7d))
+* syntax error ([56d05e4](https://github.com/Qumulo/qumulo-terraform-oci/commit/56d05e40ae43d06a9e8870f410ec44a742f152af))
+* update doc ([3e13b41](https://github.com/Qumulo/qumulo-terraform-oci/commit/3e13b41b81eed82ce687c07e2c55bd76028c181c))
+* update OCI provider versions in all modules ([9c7a9f5](https://github.com/Qumulo/qumulo-terraform-oci/commit/9c7a9f5f1dc57debbc0a1196eb010077ccf669dd))
+
 ## [2.4.0](https://github.com/Qumulo/qumulo-terraform-oci/compare/qumulo-terraform-oci-v2.3.0...qumulo-terraform-oci-v2.4.0) (2026-05-20)
 
 
