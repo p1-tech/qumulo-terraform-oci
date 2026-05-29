@@ -303,25 +303,79 @@ variable "create_dynamic_group_and_identity_policy" {
   default     = true
 }
 
-variable "custom_secret_key_id" {
-  description = "The id of a secret key for a user that has permissions to manage object storage in the cluster's compartment."
-  type        = string
-  sensitive   = true
-  nullable    = true
-  default     = null
-  validation {
-    condition     = (var.custom_secret_key_id == null && var.custom_secret_key == null) || (var.custom_secret_key_id != null && var.custom_secret_key_id != "" && var.custom_secret_key != null && var.custom_secret_key != "")
-    error_message = "'custom_secret_key' must be set if 'custom_secret_key_id` is set. If they are set they cannot be empty."
+variable "persistent_storage_access_model" {
+  description = <<EOT
+Configuration settings for cluster access to the persistent object storage
+
+Attributes:
+- mode:
+    One of:
+      - classic (default) - creates a new user and group for object storage access in the tenancy's default IAM domain
+      - explicit - uses explicit AWS access key and secret key from pre-provisioned user with full access to the persistent object storage
+      - domain - creates a new user and group for object storage access in a user specified IAM domain
+
+- explicit_customer_secret_key_access_key:
+    Required when access_style = "explicit"
+
+- explicit_customer_secret_key_secret_key:
+    Required when access_style = "explicit"
+
+- domain_idcs_endpoint:
+    Required when access_style = "domain"
+
+- domain_identity_domain_display_name:
+    Required when access_style = "domain"
+EOT
+  type = object({
+    access_style                            = optional(string, "classic")
+    explicit_customer_secret_key_access_key = optional(string)
+    explicit_customer_secret_key_secret_key = optional(string)
+    domain_idcs_endpoint                    = optional(string)
+    domain_identity_domain_display_name     = optional(string)
+  })
+  default = {
+    access_style                            = "classic",
+    explicit_customer_secret_key_access_key = null,
+    explicit_customer_secret_key_secret_key = null,
+    domain_idcs_endpoint                    = null,
+    domain_identity_domain_display_name     = null
   }
+  validation {
+    condition = contains(
+      ["explicit", "classic", "domain"],
+      var.persistent_storage_access_model.access_style
+    )
+    error_message = "persistent_storage_access_model.access_style must be one of: explicit, classic, or domain."
+  }
+  validation {
+    condition = (
+      var.persistent_storage_access_model.access_style != "explicit"
+      ||
+      (
+        try(length(trimspace(var.persistent_storage_access_model.explicit_customer_secret_key_access_key)) > 0, false)
+        &&
+        try(length(trimspace(var.persistent_storage_access_model.explicit_customer_secret_key_secret_key)) > 0, false)
+      )
+    )
+
+    error_message = "explicit_customer_secret_key_access_key and explicit_customer_secret_key_secret_key must be provided when access_style is 'explicit'."
+  }
+  validation {
+    condition = (
+      var.persistent_storage_access_model.access_style != "domain"
+      ||
+      (
+        try(length(trimspace(var.persistent_storage_access_model.domain_idcs_endpoint)) > 0, false)
+        &&
+        try(length(trimspace(var.persistent_storage_access_model.domain_identity_domain_display_name)) > 0, false)
+      )
+    )
+
+    error_message = "domain_idcs_endpoint and domain_identity_domain_display_name must be provided when access_style is 'domain'."
+  }
+
 }
 
-variable "custom_secret_key" {
-  description = "A secret key for a user that has permissions to manage object storage in the cluster's compartment."
-  type        = string
-  sensitive   = true
-  nullable    = true
-  default     = null
-}
 
 variable "vault_key_ocid" {
   description = "The ocid of the vault key to be used for encrypting secrets related to the deployment."

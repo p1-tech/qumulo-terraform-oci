@@ -30,13 +30,16 @@ The deployment creates the following components:
 
       B. Precreated User, Group, and Identity Policy
       * Create a new User
-      * Create a Customer Secret Key for this user, retain these values for use below
+      * Create a Customer Secret Key for this user, retain the Access Key and Secret Key values for use below
       * Create a Group that includes this user
       * Create an Identity Policy that includes the statement:
       ```
           "Allow group <group created above> to manage object-family in compartment id <cluster deployment compartment> where target.bucket.name = <bucket-prefix in output from persistent storage terraform stack>-bucket-*/"
       ```
-      * set the variables `custom_secret_key_id` and `custom_secret_key` to the Customer Secret Key OCID and key respectively.
+      * set the following variables in the `persistent_storage_access_model` object:
+        * set `access_style` to `explicit`
+        * set `explicit_customer_secret_key_access_key` to the value of the Customer Secret Key's Access ID (not the OCID)
+        * set `explicit_customer_secret_key_secret_key` to the value of the Customer Secret Key's Secret
 
 4. OCI Cluster User Permissions:
 
@@ -255,6 +258,16 @@ To deploy a cluster outside the home region, the following changes are required:
 - Update the `subnet_ocid` variable in `terraform.tfvars` to the subnet OCID of the subnet where you want to deploy the cluster.
 - The Secrets Vaults for the cluster and persistent storage must be in the same region as the cluster.
 - You must use a precreated dynamic group and identity policy created in the home region for the cluster.  Set `create_dynamic_group_and_identity_policy` to `false` in `terraform.tfvars`.  Follow the instruction in the [Prerequisites](#prerequisites) section 4.B to create the dynamic group and identity policy.
+
+## Upgrading from previous versions of this Terraform
+When upgrading from release 2.4.0 or earlier, the following changes must be made to prevent cluster redeployment
+- Do not set customer defined encryption keys for block volumes, setting customer defined keys for persistent storage buckets is supported
+- If using the `custom_secret_key_id` and `custom_secret_key` variables, add the `persistent_storage_access_model` block and make the following changes
+  - set `access_style` to `explicit`
+  - set `explicit_customer_secret_key_access_key` to the value of `custom_secret_key_id`
+  - set `explicit_customer_secret_key_secret_key` to the value of `custom_secret_key`
+- Otherwise, add the `persistent_storage_access_model` block and set `access_style` to `classic`
+- Apply the terraform stack to update the resource identities associated with persistent storage access.  There should be no changes to the deployed cluster resources.
 
 ## Support
 
