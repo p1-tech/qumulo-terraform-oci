@@ -26,6 +26,22 @@
 # **** Version 2.5.0 ****
 # x-release-please-end-version
 
+
+module "persistent-storage" {
+  source = "./persistent-storage/"
+
+  region                        = var.region
+  compartment_ocid              = var.compartment_ocid
+  persistent_storage_vault_ocid = var.persistent_storage_vault_ocid
+  vault_key_ocid                = var.vault_key_ocid
+  object_storage_encryption_key = var.object_storage_encryption_key
+  object_storage_bucket_count   = var.object_storage_bucket_count
+  defined_tags                  = var.defined_tags
+  freeform_tags                 = var.freeform_tags
+}
+
+
+
 module "core" {
   source = "./core/"
 

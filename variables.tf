@@ -107,10 +107,6 @@ variable "compartment_ocid" {
   description = "The compartment into which you want your Qumulo cluster deployed."
   type        = string
   nullable    = false
-  validation {
-    condition     = var.compartment_ocid == local.persistent_storage.compartment_ocid
-    error_message = "The compartment ocid should match the compartment ocid of the persistent storage"
-  }
 }
 
 variable "subnet_ocid" {
@@ -140,10 +136,6 @@ variable "q_cluster_soft_capacity_limit" {
   validation {
     condition     = var.q_cluster_soft_capacity_limit >= 100
     error_message = "q_cluster_soft_capacity_limit must be at least 100 TB"
-  }
-  validation {
-    condition     = var.q_cluster_soft_capacity_limit <= 500 * length(local.persistent_storage.bucket)
-    error_message = "The maximum value for q_cluster_soft_capacity_limit is 500TB per object storage bucket. Please add more buckets before increasing the capacity beyond the current supported maximum value of ${500 * length(local.persistent_storage.bucket)}TB"
   }
 }
 
@@ -436,5 +428,29 @@ variable "multi_ad_deployment" {
   validation {
     condition     = !var.multi_ad_deployment || var.availability_domain == null
     error_message = "availability_domain must be null when multi_ad_deployment is true; a single explicit availability domain cannot be combined with multi-AD placement."
+  }
+}
+
+# Variables for the persistent storage module
+
+variable "object_storage_encryption_key" {
+  description = "The OCID of the Master Encryption Key to use for bucket encryption at rest."
+  type        = string
+  default     = null
+  nullable    = true
+  validation {
+    condition     = var.object_storage_encryption_key == null || substr(var.object_storage_encryption_key, 0, 14) == "ocid1.key.oc1."
+    error_message = "object_storage_encryption_key must either be null or begin with ocid1.key.oc1."
+  }
+}
+
+variable "object_storage_bucket_count" {
+  description = "The number of object storage buckets to deploy."
+  type        = number
+  default     = 16
+  nullable    = false
+  validation {
+    condition     = var.object_storage_bucket_count >= 1
+    error_message = "object_storage_bucket_count must be at least 1"
   }
 }

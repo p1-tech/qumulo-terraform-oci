@@ -1,7 +1,7 @@
 /*
  * MIT License
  *
- * Copyright (c) 2025 Qumulo
+ * Copyright (c) 2026 Qumulo
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -22,17 +22,16 @@
  * SOFTWARE.
  */
 
-locals {
-  persistent_storage = {
-    oci_objectstorage_namespace = module.persistent-storage.oci_objectstorage_namespace
-    bucket = [
-      for b in module.persistent-storage.bucket : {
-        name = b.name
-      }
-    ]
-    bucket_region       = module.persistent-storage.bucket_region
-    bucket_prefix       = module.persistent-storage.bucket_prefix
-    object_storage_uris = module.persistent-storage.object_storage_uris
-    compartment_ocid    = module.persistent-storage.compartment_ocid
+check "persistent_storage_compartment" {
+  assert {
+    condition     = var.compartment_ocid == local.persistent_storage.compartment_ocid
+    error_message = "The compartment ocid should match the compartment ocid of the persistent storage"
+  }
+}
+
+check "cluster_capacity_vs_buckets" {
+  assert {
+    condition     = var.q_cluster_soft_capacity_limit <= 500 * length(local.persistent_storage.bucket)
+    error_message = "The maximum value for q_cluster_soft_capacity_limit is 500TB per object storage bucket. Please add more buckets before increasing the capacity beyond the current supported maximum value of ${500 * length(local.persistent_storage.bucket)}TB"
   }
 }
